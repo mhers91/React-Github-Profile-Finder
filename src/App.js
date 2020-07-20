@@ -1,47 +1,46 @@
-import React, { Fragment, Component } from 'react';
+import React, { Fragment } from 'react';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Users from './components/Users/Users';
+import User from './components/Users/User';
 import Search from './components/Users/Search';
-import axios from 'axios';
+import Alert from './components/layout/Alert';
+import About from './components/pages/About';
+
+import GithubState from './context/github/GithubState';
+import AlertState from './context/alert/AlertState';
+
 import './App.css';
 
-class App extends Component {
-  state = {
-    users: [],
-    loading: false,
-  };
-
-  // Search Github Users
-  searchUsers = async (text) => {
-    this.setState({ loading: true });
-
-    const res = await axios.get(
-      `https://api.github.com/search/users?q=${text}&client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&client_secret=${process.env.REACT_APP_GITHUB_CLIENT_SECRET}`
-    );
-
-    this.setState({ users: res.data.items, loading: false });
-  };
-
-  // Clear Users from State
-  clearUsers = () => this.setState({ users: [], loading: false });
-
-  render() {
-    const { users, loading } = this.state;
-
-    return (
-      <div className='App'>
-        <Navbar />
-        <div className='container'>
-          <Search
-            searchUsers={this.searchUsers}
-            clearUsers={this.clearUsers}
-            showClear={users.length > 0 ? true : false}
-          />
-          <Users loading={loading} users={users} />
-        </div>
-      </div>
-    );
-  }
-}
+const App = () => {
+  return (
+    <GithubState>
+      <AlertState>
+        <Router>
+          <div className='App'>
+            <Navbar />
+            <div className='container'>
+              <Alert />
+              <Switch>
+                <Route
+                  exact
+                  path='/'
+                  render={(props) => (
+                    <Fragment>
+                      <Search />
+                      <Users />
+                    </Fragment>
+                  )}
+                />
+                <Route exact path='/about' component={About} />
+                <Route exact path='/user/:login' component={User} />
+              </Switch>
+            </div>
+          </div>
+        </Router>
+      </AlertState>
+    </GithubState>
+  );
+};
 
 export default App;
